@@ -46,13 +46,15 @@ for i=1:epochs
                     populationQ(e).member(n).Cost = CostFunction(populationQ(e).member(n).Position);  
 
                     %populationQ(e).History(n).push(populationQ(e).member(n).Cost)
-                    if rand > .5 %populationQ(e).History(n).hasConverged
+                    if rand > .7 %populationQ(e).History(n).hasConverged
                         if populationQ(e).InitialCost -  populationQ(e).member(n).Cost > MinimalImprovementThresh
                             popn = SpawnPopulation(populationQ(e).member(n),Explosive_Radius,Explosive_Fragments,50);
                             popn.C1 = C1;
                             % Increase Social Component Per Layer
                             popn.C2 = populationQ(e).C2 + 1;
-                            append(populationQ,popn);
+                            popn.W = populationQ(e).W
+                            %append(populationQ,popn);
+                            populationQ = [populationQ,popn];
                         end
                         % Remove Particle
                         populationQ(e).member(n).alive = false; 
