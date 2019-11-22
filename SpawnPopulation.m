@@ -4,6 +4,7 @@ population.Best.Cost = Seed.Cost;
 population.member = repmat(Seed,Size,1); 
 population.member(1) = Seed;
 population.InitialCost = Seed.Cost;
+population.alive = true;
 population.History = repmat(inf(1,Hist_Size),Size,1);
 for i=2:Size
     population.member(i).Position = population.member(i).Position + unifrnd(-S_radius,S_radius,1,Dim);
