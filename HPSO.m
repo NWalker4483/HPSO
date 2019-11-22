@@ -12,6 +12,7 @@ C2 = 0.1; %% Social Coefficient
 Dim = 5; %% Matrix size of decision variable 
 MinimalImprovementThresh = 2 ;
 %% Initialization 
+zero_particle.alive = true;
 zero_particle.Position = zeros(1,Dim);
 zero_particle.Velocity = zeros(1,Dim);
 zero_particle.Cost = inf;
@@ -29,41 +30,49 @@ for i=1:epochs
         % for particle in population 
         % if particle explodes remove it from population members
         % if population has zero members remove from queue
-        if length(populationQ(e).members) == 0 
-            %Remove From Q and skip iteration 
-        end
-        
-        for n = 1:length(populationQ(e).members) 
-            populationQ(e).member(n).Velocity = populationQ(e).W * populationQ(e).member(n).Velocity ...
-                + populationQ(e).C1*rand(1,Dim) .* (populationQ(e).member(n).Best.Position - populationQ(e).member(n).Position)...
-                + populationQ(e).C2*rand(1,Dim) .* (populationQ(e).Best.Position - populationQ(e).member(n).Position);
-            
-            populationQ(e).member(n).Position = populationQ(e).member(n).Position + populationQ(e).member(n).Velocity;
-            populationQ(e).member(n).Cost = CostFunction(populationQ(e).member(n).Position);  
-            
-            populationQ(e).History(n).push(populationQ(e).member(n).Cost)
-            if populationQ(e).History(n).hasConverged
-                if populationQ(e).InitialCost - populationQ(e).Best > MinimalImprovementThresh
-                    popn = SpawnPopulation(Seed,S_radius,Explosive_Fragments,50);
-                    popn.C1 = C1;
-                    popn.C2 = popn.C2 + 1;
-                    populationQ.push(popn)
-                end
-                populationQ(e).members.remove(populationQ(e).members(n))
+        if populationQ(e).alive 
+            %Kill and skip iteration 
+            active = false;
+            for n = 1:length(populationQ(e).members)
                 % Skip to next particle
+                if populationQ(e).members(n).alive
+                    active = true;
+                    populationQ(e).member(n).Velocity = populationQ(e).W * populationQ(e).member(n).Velocity ...
+                        + populationQ(e).C1*rand(1,Dim) .* (populationQ(e).member(n).Best.Position - populationQ(e).member(n).Position)...
+                        + populationQ(e).C2*rand(1,Dim) .* (populationQ(e).Best.Position - populationQ(e).member(n).Position);
+
+                    populationQ(e).member(n).Position = populationQ(e).member(n).Position + populationQ(e).member(n).Velocity;
+                    populationQ(e).member(n).Cost = CostFunction(populationQ(e).member(n).Position);  
+
+                    populationQ(e).History(n).push(populationQ(e).member(n).Cost)
+                    if populationQ(e).History(n).hasConverged
+                        if populationQ(e).InitialCost - populationQ(e).Best > MinimalImprovementThresh
+                            popn = SpawnPopulation(Seed,S_radius,Explosive_Fragments,50);
+                            popn.C1 = C1;
+                            % Increase Social Component Per Layer
+                            popn.C2 = popn.C2 + 1;
+                            append(populationQ,popn);
+                        end
+                        % Remove Particle
+                        populationQ(e).members(n).alive = false; 
+                    end
+                    if populationQ(e).member(n).Cost < populationQ(e).member(n).Best.Cost    
+                        populationQ(e).member(n).Best.Position = populationQ(e).member(n).Position;
+                        populationQ(e).member(n).Best.Cost = populationQ(e).member(n).Cost;
+                    end
+                end
             end
-            if populationQ(e).member(n).Cost < populationQ(e).member(n).Best.Cost    
-                populationQ(e).member(n).Best.Position = populationQ(e).member(n).Position;
-                populationQ(e).member(n).Best.Cost = populationQ(e).member(n).Cost;
+            populationQ(e).W = populationQ(e).W * D;
+            for n = 1:length(populationQ(e).members)
+                if populationQ(e).member(n).alive
+                    if populationQ(e).member(n).Best.Cost < populationQ(e).Best.Cost
+                        populationQ(e).Best = populationQ(e).member(n).Best;
+                    end
+                end
             end
+            populationQ(e).alive = active;
         end
-        populationQ(e).W = populationQ(e).W * D;
-        for n = 1:length(populationQ(e).members)
-            if populationQ(e).member(n).Best.Cost < populationQ(e).Best.Cost
-                populationQ(e).Best = populationQ(e).member(n).Best;
-            end
-        end
-    end
+   end  
 end
 %% Cleanup
 %% delete(gcp('nocreate'))
