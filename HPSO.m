@@ -20,7 +20,7 @@ D = .99; %% Inertia Damping Rate
 C1 = 1; %% Personal Coefficient
 C2 = 0.1; %% Initial Social Coefficient
 C3 = 3.4; %% Social Growth Rate
-MinimalImprovementThresh = 0;
+MinimalImprovementThresh = 2;
 %% Initialization
 pop1 = SpawnPopulation(zero_particle,Search_Radius,InitialSwarmSize,50);
 pop1.C1 = C1;
@@ -55,6 +55,7 @@ for i=1:epochs
                     
                     %populationQ(e).History(n).push(populationQ(e).member(n).Cost)
                     if rand > .1 %populationQ(e).History(n).hasConverged
+                        populationQ(e).member(n).Cost
                         if (populationQ(e).InitialCost - populationQ(e).member(n).Cost) > MinimalImprovementThresh
                             % popn = SpawnPopulation(populationQ(e).member(n),Explosive_Radius,Explosive_Fragments,50);
                             %% Debug Line
