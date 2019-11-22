@@ -3,8 +3,8 @@ CostFunction = @(x) Magnitude(x);
 Dim = 5; %% Matrix size of decision variable
 %% Helper Struct
 zero_particle.alive = true;
-zero_particle.Position = zeros(1,Dim);
-zero_particle.Velocity = zeros(1,Dim);
+zero_particle.Position = zeros(1,Dim)+1e-16;
+zero_particle.Velocity = zeros(1,Dim)+1e-16;
 zero_particle.Cost = inf;
 zero_particle.Best.Position = zeros(1,Dim);
 zero_particle.Best.Cost = inf;
@@ -20,11 +20,20 @@ D = .99; %% Inertia Damping Rate
 C1 = 1; %% Personal Coefficient
 C2 = 0.1; %% Initial Social Coefficient
 C3 = 3.4; %% Social Growth Rate
-MinimalImprovementThresh = 2;
+MinimalImprovementThresh = 0;
 %% Initialization
 pop1 = SpawnPopulation(zero_particle,Search_Radius,InitialSwarmSize,50);
 pop1.C1 = C1;
 pop1.C2 = C2;
+for i=1:InitialSwarmSize
+    pop1.member(i).Cost = CostFunction(pop1.member(i).Position);
+    % pop1.History(i).push(population.member(i).Cost);
+    pop1.member(i).Best.Position = pop1.member(i).Position;
+    pop1.member(i).Best.Cost = pop1.member(i).Cost;
+    if pop1.member(i).Best.Cost < pop1.Best.Cost
+        pop1.Best = pop1.member(i).Best;
+    end
+end
 populationQ = [pop1];
 %% Main Loop
 % parpool('local');
@@ -55,7 +64,6 @@ for i=1:epochs
                     
                     %populationQ(e).History(n).push(populationQ(e).member(n).Cost)
                     if rand > .1 %populationQ(e).History(n).hasConverged
-                        populationQ(e).member(n).Cost
                         if (populationQ(e).InitialCost - populationQ(e).member(n).Cost) > MinimalImprovementThresh
                             % popn = SpawnPopulation(populationQ(e).member(n),Explosive_Radius,Explosive_Fragments,50);
                             %% Debug Line
