@@ -21,7 +21,7 @@ C1 = 1; %% Personal Coefficient
 C2 = 0.1; %% Initial Social Coefficient
 C3 = 3.4; %% Social Growth Rate
 MinimalImprovementThresh = 0;
-MinStdDev = .2
+MinStdDev = .2;
 %% Initialization
 pop1 = SpawnPopulation(zero_particle,Search_Radius,InitialSwarmSize,50);
 pop1.C1 = C1;
@@ -63,7 +63,10 @@ for i=1:epochs
                     end
                     
                     %populationQ(e).History(n).push(populationQ(e).member(n).Cost)
-                    if std(populationQ(e).History(n)) < MinStdDev
+                    populationQ(e).History(n) = [populationQ(e).History(n) populationQ(e).member(n).Cost];
+                    k = length(populationQ(e).History(n));
+                    hist = populationQ(e).History(n);
+                    if std(hist(abs((k - 50):k))) < MinStdDev
                         if (populationQ(e).InitialCost - populationQ(e).member(n).Cost) > MinimalImprovementThresh
                             popn = SpawnPopulation(populationQ(e).member(n),Explosive_Radius,Explosive_Fragments,50);
                             %% Debug Line
