@@ -36,7 +36,6 @@ for i=1:InitialSwarmSize
 end
 populationQ = [pop1];
 %% Main Loop
-% parpool('local');
 for i=1:epochs
     % for each population in queue
     for e = 1:length(populationQ)
@@ -65,15 +64,14 @@ for i=1:epochs
                     %populationQ(e).History(n).push(populationQ(e).member(n).Cost)
                     if rand > .1 %populationQ(e).History(n).hasConverged
                         if (populationQ(e).InitialCost - populationQ(e).member(n).Cost) > MinimalImprovementThresh
-                            % popn = SpawnPopulation(populationQ(e).member(n),Explosive_Radius,Explosive_Fragments,50);
+                            popn = SpawnPopulation(populationQ(e).member(n),Explosive_Radius,Explosive_Fragments,50);
                             %% Debug Line
-                            popn = SpawnPopulation(populationQ(e).member(n),Explosive_Radius,length(populationQ(e).member(n))+1,50);
-                      
+                            %popn = SpawnPopulation(populationQ(e).member(n),Explosive_Radius,length(populationQ(e).member(n))+1,50);
+                            %debug = debug + 1;
                             popn.C1 = C1;
                             % Increase Social Component Per Layer
                             popn.C2 = populationQ(e).C2 * C3;
-                            %append(populationQ,popn);
-                            debug = debug + 1;
+                            
                             populationQ = [populationQ;popn];
                         end
                         % Kill Particles that have exploded
@@ -92,5 +90,3 @@ for i=1:epochs
     end
     W = W * D;
 end
-%% Cleanup
-% delete(gcp('nocreate'))
